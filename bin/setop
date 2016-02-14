@@ -1,0 +1,157 @@
+#!/bin/bash
+#
+# Perform set operations in the UNIX shell!
+
+PROGNAME=${0##*/}
+VERSION="0.1.0"
+
+usage()
+{
+  cat <<EO
+Usage: $PROGNAME <cmd> <args>
+Perform set operations in the UNIX shell!
+Commands:
+EO
+cat <<EO | column -s\& -t
+  help                          & Shows this help
+  is-member <kwd> <set1> ... <setn>  & Tests whether the line set1 is present in the file set2
+  equals <set1> <set2>          & Tests whether the unique lines in file set1 are the same as the unique lines in set2
+  count <set1> <set2> ... <setn> & Counts the number of unique lines in files set1, set2, ..., setn combined
+  is-subset <base> <set1> ... <setn> & Tests whether all lines in file base are present in files set1, ..., setn combined
+  union <set1> <set2> ... <setn> & Displays all unique lines that are present in files set1, set2, ..., setn combined
+  inter <set1> <set2>          & Displays all unique lines that are common to files set1 and set2
+  minus <set1> <set2>          & Displays all unique lines in file set1 that are not present in file set2
+  sym-diff <set1> <set2> ... <setn> & Displays all unique lines that are present in either files set1 or set2 ... or setn, but not in all of them
+  product <set1> <set2>          & Displays the cartesian product of the unique lines from files set1 and set2
+  is-disjoint <set1> <set2>          & Tests whether there are any lines common to both files set1 and set2
+  is-empty <set1> <set2> ... <setn> & Tests whether there are any lines in files set1, set2, ..., setn combined
+  min <set1> <set2> ... <setn> & Displays the lexicographic minimum from among the lines in files set1, set2, ..., setn combined
+  max <set1> <set2> ... <setn> & Displays the lexicographic maximum from among the lines in files set1, set2, ..., setn combined
+EO
+}
+
+version() {
+  cat <<EO
+v$VERSION
+EO
+}
+
+log_error_and_exit() {
+  echo "setop: $1: $2" 1>&2; exit 1
+}
+
+is_not_empty() {
+  head -1 "$@" | wc -l | awk {'print $1'}
+}
+
+is_empty() {
+  head -1 "$@" | wc -l | awk {'print ($1 == 0 ? 1 : 0)'}
+}
+
+is_member() {
+  kwd="$1"
+  shift
+  grep "$kwd" "$@" | is_not_empty
+}
+
+equals() {
+  diff <(sort -u "$1") <(sort -u "$2") | is_empty
+}
+
+count() {
+  sort -u "$@" | wc -l | awk {'print $1'}
+}
+
+is_subset() {
+  base="$1"
+  shift
+  comm -23 <(sort -u "$base") <(sort -u "$@") | is_empty
+}
+
+union() {
+  sort -u "$@"
+}
+
+inter() {
+  comm -12 <(sort -u "$1") <(sort -u "$2")
+}
+
+minus() {
+  comm -23 <(sort -u "$1") <(sort -u "$2")
+}
+
+sym_diff() {
+  sort "$@" | uniq -u
+}
+
+product() {
+  awk 'NR==FNR { a[$0]; next } { for (i in a) print i, $0 }' <(sort -u "$1") <(sort -u "$2")
+}
+
+is_disjoint() {
+  inter "$1" "$2" | is_empty
+}
+
+min() {
+  sort "$@" | head -1
+}
+
+max() {
+  sort "$@" | tail -1
+}
+
+CMD="$1"
+case $CMD in
+  -h|--help|help)
+    usage; exit 0
+    ;;
+  -v|--version|version)
+    version; exit 0
+    ;;
+  is-member)
+    kwd="$2"
+    shift 2
+    is_member "$kwd" "$@"
+    ;;
+  equals)
+    equals "$2" "$3"
+    ;;
+  count)
+    shift; count "$@"
+    ;;
+  is-subset)
+    base="$2"
+    shift 2
+    is_subset "$base" "$@"
+    ;;
+  union)
+    shift; union "$@"
+    ;;
+  inter)
+    inter "$2" "$3"
+    ;;
+  minus)
+    minus "$2" "$3"
+    ;;
+  sym-diff)
+    shift; sym_diff "$@"
+    ;;
+  product)
+    product "$2" "$3"
+    ;;
+  is-disjoint)
+    is_disjoint "$2" "$3"
+    ;;
+  is-empty)
+    shift; is_empty "$@"
+    ;;
+  min)
+    shift; min "$@"
+    ;;
+  max)
+    shift; max "$@"
+    ;;
+  *)
+    log_error_and_exit "$CMD" "Unknown command"
+    ;;
+esac

@@ -1,0 +1,12 @@
+{
+  "name": "setop",
+  "version": "0.1.0",
+  "preferGlobal": true,
+  "description": "A Bash script to perform set operations in the UNIX shell!",
+  "bin": "bin/setop",
+  "homepage": "https://github.com/cdax/setop",
+  "keywords": ["set", "bash", "script"],
+  "license": "MIT",
+  "author": "Chitharanjan Das <das.chitharanjan@gmail.com>",
+  "files": ["bin"]
+}
