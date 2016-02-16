@@ -41,11 +41,19 @@ log_error_and_exit() {
 }
 
 is_not_empty() {
-  head -1 "$@" | wc -l | awk {'print $1'}
+  if ! is_empty; then
+    true
+  else
+    false
+  fi
 }
 
 is_empty() {
-  head -1 "$@" | wc -l | awk {'print ($1 == 0 ? 1 : 0)'}
+  if [ $(head -1 "$@" | wc -l) -eq 0 ]; then
+    true
+  else
+    false
+  fi
 }
 
 is_member() {
