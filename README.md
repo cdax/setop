@@ -335,28 +335,28 @@ For example:
 For example:
 
     $ setop product set-1.txt set-2.txt
-    abc abc
     ghi abc
     def abc
-    abc def
+    abc abc
     ghi def
     def def
-    abc ghi
+    abc def
     ghi ghi
     def ghi
+    abc ghi
     $ setop product set-2.txt set-3.txt
-    abc abc
     ghi abc
     def abc
-    abc def
+    abc abc
     ghi def
     def def
-    abc ghi
+    abc def
     ghi ghi
     def ghi
-    abc xyz
+    abc ghi
     ghi xyz
     def xyz
+    abc xyz
 
 `set-1.txt`
 
